@@ -1,13 +1,17 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"os/exec"
 	"path"
+	"strings"
 	"syscall"
 
+	"github.com/gookit/color"
 	"github.com/subchen/go-cli/v3"
 )
 
@@ -18,12 +22,24 @@ func runApp(c *cli.Context) {
 }
 
 func handleRepo(p string) {
-	fmt.Println("pull:", p)
+	color.Yellow.Print("[PULL] ")
+	fmt.Print(p, "...")
 	if isGitRepoDirty(p) {
 		gitStash(p)
 		defer gitStashPop(p)
 	}
-	gitPull(p)
+	var errBuf bytes.Buffer
+	ret := gitPull(p, &errBuf)
+	if ret == 0 {
+		color.LightGreen.Println(" OK")
+	} else {
+		color.LightRed.Printf(" ERROR(%d)\n", ret)
+		errStr := errBuf.String()
+		if !strings.HasSuffix(errStr, "\n") {
+			errStr += "\n"
+		}
+		color.Red.Print(errStr)
+	}
 }
 
 func walkGitDir(pathAll string, depLeft int, fn func(p string)) {
@@ -79,8 +95,11 @@ func gitStashPop(p string) {
 	cmd.Run()
 }
 
-func gitPull(p string) int {
+func gitPull(p string, wErr io.Writer) int {
 	cmd := exec.Command("git", "-C", p, "pull")
+	if wErr != nil {
+		cmd.Stderr = wErr
+	}
 	if err := cmd.Run(); err != nil {
 		if exiterr, ok := err.(*exec.ExitError); ok {
 			if status, ok := exiterr.Sys().(syscall.WaitStatus); ok {
