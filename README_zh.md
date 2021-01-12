@@ -1,17 +1,15 @@
 # batchpull
-A tool for batch updating git repositories.
+一个批量更新git仓库的小工具
 
-[中文说明](README_zh.md)
-
-## Install
+## 安装
 
 ```bash
 $ go get github.com/lonord/batchpull
 ```
 
-## Example
+## 示例
 
-A directory which contains some git repos.
+有一个目录包含几个git仓库
 
 ```bash
 $ pwd
@@ -20,7 +18,7 @@ $ ls
 repo_foo    repo_bar    repo_other
 ```
 
-Execute `batchpull` in this directory.
+在该目录中执行 `batchpull`
 
 ```bash
 $ batchpull
@@ -29,8 +27,8 @@ $ batchpull
 [PULL] repo_other... OK
 ```
 
-And now these repos is up-to-date.
+这些仓库已经更新到最新状态
 
-## License
+## 许可证
 
 MIT
