@@ -71,16 +71,16 @@ func isGitDir(p string) bool {
 }
 
 func isGitRepoDirty(p string) bool {
-	cmd := exec.Command("git", "-C", p, "diff", "--quiet")
-	if err := cmd.Run(); err != nil {
-		if exiterr, ok := err.(*exec.ExitError); ok {
-			if status, ok := exiterr.Sys().(syscall.WaitStatus); ok {
-				if status.ExitStatus() != 0 {
-					return true
-				}
-			}
-		}
+	cmd := exec.Command("git", "-C", p, "status", "--short", "--porcelain")
+	b, err := cmd.CombinedOutput()
+	if err != nil {
 		errorExit(err.Error())
+	}
+	lines := strings.Split(string(b), "\n")
+	for _, l := range lines {
+		if len(strings.TrimSpace(l)) > 0 && !strings.HasPrefix(l, "??") {
+			return true
+		}
 	}
 	return false
 }
